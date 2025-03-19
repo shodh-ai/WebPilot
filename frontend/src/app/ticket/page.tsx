@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { z } from "zod";
+import { toast } from "sonner";
+import { addTicket } from "@/api/sendTicket";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -38,7 +40,21 @@ export default function Ticket() {
       setErrors(formattedErrors);
     } else {
       setErrors({});
+      setFormData({ email: "", department: "", details: "" });
       console.log("Form submitted", formData);
+      addTicket(formData.email, formData.department, formData.details)
+        .then((success) => {
+          if (success) {
+            toast.success("Your inquiry has been sent successfully");
+          } else {
+            toast.error("Failed to send your inquiry. Please try again later");
+          }
+        })
+        .catch((error) => {
+          console.error("Error sending inquiry:", error);
+          toast.error("Failed to send your inquiry. Please try again later");
+        }
+        );
     }
   };
 
