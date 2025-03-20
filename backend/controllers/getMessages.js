@@ -33,7 +33,7 @@ exports.getMessages = async (req, res) => {
         )
       `)
       .or(`sender.eq.${user_id},reciver.eq.${user_id}`)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
     if (error) {
       console.log("Backend: Error retrieving messages:", error.message);
       return res.status(500).json({ error: error.message });

@@ -39,7 +39,7 @@ export default function MessagePage() {
 
     async function fetchMessages() {
       try {
-        const msgs = await getMessages();
+        const msgs = await getMessages(CONSTANT_USER_ID);
         setMessages(msgs);
       } catch (err) {
         console.error("Error fetching messages", err);
@@ -101,7 +101,7 @@ export default function MessagePage() {
     if (!selectedChat || newMessage.trim() === "") return;
 
     try {
-      const result = await sendMessage(newMessage,selectedChat);
+      const result = await sendMessage(CONSTANT_USER_ID,newMessage,selectedChat);
       if (result && result.messageData) {
         // Add the new message to local state
         setMessages((prev) => [

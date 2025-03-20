@@ -1,12 +1,10 @@
 import axios from "axios";
 
-const CONSTANT_SENDER_ID = "719e481e-76fb-4938-8f06-0de7ae9f4e70";
 
-
-export async function sendMessage(content: string , receiver_id:string) {
+export async function sendMessage(sender_id: string, content: string , receiver_id:string) {
   try {
     const response = await axios.post("http://localhost:8000/api/messages/send", {
-      sender_id: CONSTANT_SENDER_ID,
+      sender_id: sender_id,
       receiver_id,
       content,
     });

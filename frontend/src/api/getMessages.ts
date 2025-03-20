@@ -1,11 +1,10 @@
 import axios from "axios";
 
-const CONSTANT_USER_ID = "719e481e-76fb-4938-8f06-0de7ae9f4e70";
 
-export async function getMessages() {
+export async function getMessages(user_id: string ) {
   try {
     const response = await axios.post("http://localhost:8000/api/messages/get", {
-      user_id: CONSTANT_USER_ID,
+      user_id: user_id,
     });
     if (response.status === 200) {
       console.log("Frontend: Messages fetched successfully:", response.data.messages);
