@@ -5,10 +5,33 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import { FaTicket } from "react-icons/fa6";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 export default function NavigationMenuBar() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is logged in when component mounts
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    
+    // Clear the cookie
+    document.cookie = "token=; path=/; max-age=0";
+    
+    // Redirect to login page
+    router.push("/login");
+  };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,6 +62,22 @@ export default function NavigationMenuBar() {
         <NavigationMenuLink href="/ticket">
           <FaTicket className="text-gray-500 dark:text-neutral-500" />
         </NavigationMenuLink>
+        
+        {isLoggedIn ? (
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleLogout}
+            className="flex items-center gap-1"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </Button>
+        ) : (
+          <NavigationMenuItem>
+            <NavigationMenuLink href="/login">Login</NavigationMenuLink>
+          </NavigationMenuItem>
+        )}
       </div>
     </NavigationMenu>
   );
