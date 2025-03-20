@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getMessages } from "@/api/getMessages";
+import { getUsers } from "@/api/getUsers";
 import { sendMessage } from "@/api/sendMessage";
 import axios from "axios";
 
@@ -30,11 +31,8 @@ export default function MessagePage() {
   useEffect(() => {
     async function fetchAllUsers() {
       try {
-        // Example endpoint to fetch users. Adjust as needed.
-        const response = await axios.post("http://localhost:8000/api/users/get", {});
-        if (response.status === 200 && response.data && response.data.data) {
-          setAllUsers(response.data.data); // 'data' array contains all users
-        }
+        const users = await getUsers();
+        setAllUsers(users);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
