@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { getMessages } from "@/api/getMessages";
 import { getUsers } from "@/api/getUsers";
 import { sendMessage } from "@/api/sendMessage";
-import axios from "axios";
 
 const CONSTANT_USER_ID = "719e481e-76fb-4938-8f06-0de7ae9f4e70";
 
@@ -40,9 +39,6 @@ export default function MessagePage() {
 
     async function fetchMessages() {
       try {
-        // This is your existing function that fetches messages.
-        // In your code, it's currently calling the same endpoint that returns users,
-        // but presumably you'll change that to your actual "get messages" endpoint.
         const msgs = await getMessages();
         setMessages(msgs);
       } catch (err) {
@@ -66,8 +62,6 @@ export default function MessagePage() {
 
   // ----------------------------------------------------------------------------
   // 3) Maintain the chat participants
-  //    - We derive participants from the messages themselves (like you did),
-  //      but also let the user add new ones from search
   // ----------------------------------------------------------------------------
   useEffect(() => {
     // Derive participants from existing messages
@@ -107,7 +101,7 @@ export default function MessagePage() {
     if (!selectedChat || newMessage.trim() === "") return;
 
     try {
-      const result = await sendMessage(newMessage);
+      const result = await sendMessage(newMessage,selectedChat);
       if (result && result.messageData) {
         // Add the new message to local state
         setMessages((prev) => [
