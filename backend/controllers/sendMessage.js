@@ -8,8 +8,8 @@ exports.sendMessage = async (req, res) => {
     if (!parsed.success) {
       return res.status(400).json({ errors: parsed.error.issues });
     }
-
-    const { sender_id, receiver_id, content } = parsed.data;
+    const { receiver_id, content } = parsed.data;
+    const sender_id = req.user.userId; 
 
     const { data: senderData, error: senderError } = await supabase
       .from('User')
@@ -30,6 +30,7 @@ exports.sendMessage = async (req, res) => {
     if (receiverError || !receiverData) {
       return res.status(404).json({ error: 'Receiver not found.' });
     }
+
     const newMessageId = uuidv4();
     const { data: messageData, error: messageError } = await supabase
       .from('Message')
@@ -59,7 +60,6 @@ exports.sendMessage = async (req, res) => {
       return res.status(500).json({ error: messageUserError.message });
     }
 
-    
     return res.status(200).json({
       message: 'Message sent successfully',
       messageData,
