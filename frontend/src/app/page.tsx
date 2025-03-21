@@ -1,10 +1,12 @@
 "use client";
+
 import NavigationMenuBar from "@/components/nav";
 import { Card } from "@/components/ui/card";
 import { getPosts } from "@/api/getPosts";
 import { addPost } from "@/api/addPost";
 import { Post } from "@/types/posts";
 import { useEffect, useState, FormEvent } from "react";
+
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

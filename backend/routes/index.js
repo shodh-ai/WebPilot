@@ -1,12 +1,12 @@
-const express = require('express');
-const helloRoutes = require('./helloRoutes');
-const query = require('./query');
-const postsRoutes = require('./posts');
-const messagesRoutes = require('./messages');
-const userRoutes = require('./users');
-const authRoutes = require('./auth');
+import { Router } from 'express';
+import helloRoutes from './helloRoutes.js';
+import query from './query.js';
+import postsRoutes from './posts.js';
+import messagesRoutes from './messages.js';
+import userRoutes from './users.js';
+import authRoutes from './auth.js';
 
-const router = express.Router();
+const router = Router();
 
 router.use('/hello', helloRoutes);
 router.use('/query', query);
@@ -15,4 +15,4 @@ router.use('/messages', messagesRoutes);
 router.use('/users', userRoutes);
 router.use('/auth', authRoutes);
 
-module.exports = router;
+export default router;

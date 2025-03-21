@@ -1,9 +1,9 @@
-const { supabase } = require('../config/supabase');
+import supabase from '../config/supabase';
 
 const searchPosts = async (req, res) => {
   try {
     const { query } = req.query;
-    
+
     if (!query) {
       return res.status(400).json({ error: 'Search query is required' });
     }
@@ -15,7 +15,7 @@ const searchPosts = async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    
+
     return res.status(200).json(data);
   } catch (error) {
     console.error('Error searching posts:', error);
@@ -23,4 +23,4 @@ const searchPosts = async (req, res) => {
   }
 };
 
-module.exports = { searchPosts };
+export default { searchPosts };

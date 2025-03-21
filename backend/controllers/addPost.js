@@ -1,8 +1,8 @@
-const { v4: uuidv4 } = require('uuid');
-const { supabase } = require('../config/supabase');
-const { addPostSchema } = require('../schemas/addPostSchema');
+import { v4 as uuidv4 } from 'uuid';
+import supabase from '../config/supabase.js';
+import { addPostSchema } from '../schemas/addPostSchema.js';
 
-exports.addPost = async (req, res) => {
+export async function addPost(req, res) {
   try {
     const parsed = addPostSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -59,4 +59,4 @@ exports.addPost = async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}

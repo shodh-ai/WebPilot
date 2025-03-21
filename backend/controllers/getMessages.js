@@ -1,6 +1,6 @@
-const { supabase } = require('../config/supabase');
+import supabase from '../config/supabase.js';
 
-exports.getMessages = async (req, res) => {
+export async function getMessages(req, res) {
   try {
     const user_id = req.user.userId;
     const { data: userData, error: userError } = await supabase

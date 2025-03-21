@@ -1,8 +1,8 @@
-const express = require('express');
-const { addQuery } = require('../controllers/addQuery');
+import { Router } from 'express';
+import { addQuery } from '../controllers/addQuery.js';
 
-const router = express.Router();
+const router = Router();
 
 router.post('/add_query', addQuery);
 
-module.exports = router;
+export default router;

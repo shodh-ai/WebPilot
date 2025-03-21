@@ -1,13 +1,13 @@
-const express = require('express');
-const { getPosts } = require('../controllers/getPosts');
-const { addPost } = require('../controllers/addPost');
-const { verifyToken } = require('../controllers/authController');
-const { searchPosts } = require('../controllers/searchPosts');
+import { Router } from 'express';
+import { getPosts } from '../controllers/getPosts.js';
+import { addPost } from '../controllers/addPost.js';
+import { verifyToken } from '../controllers/authController.js';
+import { searchPosts } from '../controllers/searchPosts.js';
 
-const router = express.Router();
+const router = Router();
 
-router.post('/add_post',verifyToken, addPost);
-router.post('/get_posts',verifyToken, getPosts);
+router.post('/add_post', verifyToken, addPost);
+router.post('/get_posts', verifyToken, getPosts);
 router.get('/search', searchPosts);
 
-module.exports = router;
+export default router;

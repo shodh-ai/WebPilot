@@ -1,7 +1,6 @@
-const { supabase } = require('../config/supabase');
-const jwt = require('jsonwebtoken');
+import supabase from '../config/supabase.js';
 
-exports.addQuery = async (req, res) => {
+export async function addQuery(req, res) {
   const { text, department, email } = req.body;
 
   const { data: userData, error: userError } = await supabase
@@ -37,4 +36,4 @@ exports.addQuery = async (req, res) => {
   } else {
     res.status(200).json({ message: 'Query added successfully' });
   }
-};
+}

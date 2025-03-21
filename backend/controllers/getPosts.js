@@ -1,6 +1,6 @@
-const { supabase } = require('../config/supabase');
+import supabase from '../config/supabase.js';
 
-exports.getPosts = async (req, res) => {
+export async function getPosts(req, res) {
   const { data, error } = await supabase
     .from('Posts')
     .select('Title, Content, created_at')
@@ -12,4 +12,4 @@ exports.getPosts = async (req, res) => {
     console.log(data);
     res.json(data);
   }
-};
+}

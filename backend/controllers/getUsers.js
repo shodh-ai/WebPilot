@@ -1,6 +1,6 @@
-const { supabase } = require('../config/supabase');
+import supabase from '../config/supabase.js';
 
-exports.getUsers = async (req, res) => {
+export async function getUsers(req, res) {
   try {
     const { data: users, error } = await supabase
       .from('User')
@@ -15,4 +15,4 @@ exports.getUsers = async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}

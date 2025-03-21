@@ -1,10 +1,10 @@
-const jwt = require('jsonwebtoken');
-const { supabase } = require('../config/supabase');
+import jwt from 'jsonwebtoken';
+import supabase from '../config/supabase';
 
-exports.getLiveMessage = async (req, res) => {
+export async function getLiveMessage(req, res) {
   try {
     console.log('Starting live message stream...');
-    
+
     res.set({
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
@@ -28,7 +28,7 @@ exports.getLiveMessage = async (req, res) => {
     console.log(`User authenticated with userId: ${userId}`);
 
     const channel = supabase.channel(`live-messages-${userId}`)
-    .on('postgres_changes', {
+      .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'message-user',
@@ -66,7 +66,7 @@ exports.getLiveMessage = async (req, res) => {
               message: messageRecord.message,
               seen: messageRecord.seen,
               created_at: messageRecord.created_at,
-          },
+            },
           };
           console.log('Sending combined message data:', combinedData);
           res.write(`data: ${JSON.stringify(combinedData)}\n\n`);
@@ -88,4 +88,4 @@ exports.getLiveMessage = async (req, res) => {
     }
     res.end();
   }
-};
+}

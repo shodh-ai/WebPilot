@@ -1,12 +1,10 @@
-require('dotenv').config();
-
-const express = require('express');
-const cors = require('cors');
-const routes = require('./routes');
-const { supabase } = require('./config/supabase');
+import './config/env.js';
+import express from 'express';
+import cors from 'cors';
+import routes from './routes/index.js';
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.BACKEND_PORT || 8000;
 
 app.use(cors());
 app.use(express.json());

@@ -1,15 +1,15 @@
-const { v4: uuidv4 } = require('uuid');
-const { supabase } = require('../config/supabase');
-const { sendMessageSchema } = require('../schemas/sendMessageSchema');
+import { v4 as uuidv4 } from 'uuid';
+import supabase from '../config/supabase.js';
+import { sendMessageSchema } from '../schemas/sendMessageSchema.js';
 
-exports.sendMessage = async (req, res) => {
+export async function sendMessage(req, res) {
   try {
     const parsed = sendMessageSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ errors: parsed.error.issues });
     }
     const { receiver_id, content } = parsed.data;
-    const sender_id = req.user.userId; 
+    const sender_id = req.user.userId;
 
     const { data: senderData, error: senderError } = await supabase
       .from('User')
@@ -50,7 +50,7 @@ exports.sendMessage = async (req, res) => {
       .from('message-user')
       .insert({
         sender: sender_id,
-        reciver: receiver_id, 
+        reciver: receiver_id,
         message: newMessageId,
       })
       .select()
@@ -69,4 +69,4 @@ exports.sendMessage = async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}
