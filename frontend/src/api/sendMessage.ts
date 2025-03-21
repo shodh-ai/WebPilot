@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const sendMessage = async (receiver_id, content) => {
+export const sendMessage = async (receiver_id: string, content: string) => {
   const token = localStorage.getItem("token");
   
   try {

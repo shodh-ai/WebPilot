@@ -48,7 +48,9 @@ exports.getMessages = async (req, res) => {
       message_created_at: message.created_at,
     }));
 
-    console.log("Backend: Retrieved formatted messages:", formattedMessages);
+    formattedMessages.forEach(message => {
+      console.log("Backend: Retrieved message ID:", message.id);
+    });
     return res.status(200).json({ messages: formattedMessages });
   } catch (err) {
     console.error("Backend: Internal Server Error:", err);

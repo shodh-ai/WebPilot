@@ -9,7 +9,8 @@ exports.addPost = async (req, res) => {
       return res.status(400).json({ errors: parsed.error.issues });
     }
 
-    const { user_id, title, content } = parsed.data;
+    const { title, content } = parsed.data;
+    const user_id = req.user.userId; 
 
     const { data: userData, error: userError } = await supabase
       .from('User')
