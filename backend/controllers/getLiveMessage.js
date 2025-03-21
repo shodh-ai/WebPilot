@@ -27,8 +27,8 @@ exports.getLiveMessage = async (req, res) => {
 
     console.log(`User authenticated with userId: ${userId}`);
 
-    const channel = supabase.channel('live-messages')
-      .on('postgres_changes', {
+    const channel = supabase.channel(`live-messages-${userId}`)
+    .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'message-user',
