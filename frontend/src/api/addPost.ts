@@ -1,14 +1,18 @@
 import axios from "axios";
-
-const CONSTANT_USER_ID = "719e481e-76fb-4938-8f06-0de7ae9f4e70"; 
-
 export async function addPost(title: string, content: string) {
+  const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`http://localhost:8000/api/posts/add_post`, {
-      user_id: CONSTANT_USER_ID,
       title,
       content,
-    });
+    },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
     if (response.status === 200) {
       console.log('Post added successfully');
       return response.data;

@@ -85,3 +85,4 @@
 .DS_Store
 Thumbs.db
 .ropeproject
+node_modules
