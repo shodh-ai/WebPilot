@@ -1,25 +1,52 @@
+"use client";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 import { FaTicket } from "react-icons/fa6";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LogOut, Search } from "lucide-react";
+import { subscribeToMessages } from "@/api/getMessagesLive";
 
 export default function NavigationMenuBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Check if user is logged in when component mounts
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
+
+  // Reset unread messages if user is on the messages page
+  useEffect(() => {
+    if (pathname === "/messages") {
+      setUnreadCount(0);
+    }
+  }, [pathname]);
+
+  // Subscribe to live messages when not on the messages page
+  useEffect(() => {
+    if (pathname !== "/messages") {
+      const eventSource = subscribeToMessages(
+        (newMessageData) => {
+          console.log("New message received (nav):", newMessageData);
+          setUnreadCount((prev) => prev + 1);
+        },
+        (error) => {
+          console.error("SSE connection error in nav:", error);
+        }
+      );
+      return () => eventSource.close();
+    }
+  }, [pathname]);
 
   const handleLogout = () => {
     // Clear localStorage
@@ -47,8 +74,11 @@ export default function NavigationMenuBar() {
         <NavigationMenuItem>
           <NavigationMenuLink href="/">Home</NavigationMenuLink>
         </NavigationMenuItem>
-        <NavigationMenuItem>
+        <NavigationMenuItem className="relative">
           <NavigationMenuLink href="/messages">Messages</NavigationMenuLink>
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500" />
+          )}
         </NavigationMenuItem>
       </NavigationMenuList>
       <div className="flex items-center space-x-4">
