@@ -8,7 +8,7 @@ import { FaTicket } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Search } from "lucide-react";
 
 export default function NavigationMenuBar() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,8 +35,10 @@ export default function NavigationMenuBar() {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("Search query submitted:", searchQuery);
-    // Add your search logic here
+    if (searchQuery.trim()) {
+      // Redirect to search page with query parameter
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   return (
@@ -50,14 +52,21 @@ export default function NavigationMenuBar() {
         </NavigationMenuItem>
       </NavigationMenuList>
       <div className="flex items-center space-x-4">
-        <form onSubmit={handleSearchSubmit} className="relative">
+        <form onSubmit={handleSearchSubmit} className="relative flex items-center">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="transition-all duration-300 ease-in-out transform focus:scale-105 p-1 rounded-md border border-gray-300 dark:border-neutral-700 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none"
+            className="transition-all duration-300 ease-in-out transform focus:scale-105 p-1 pl-2 pr-8 rounded-md border border-gray-300 dark:border-neutral-700 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none"
             placeholder="Search..."
           />
+          <button 
+            type="submit" 
+            className="absolute right-2 text-gray-500 hover:text-gray-700"
+            aria-label="Search"
+          >
+            <Search className="h-4 w-4" />
+          </button>
         </form>
         <NavigationMenuLink href="/ticket">
           <FaTicket className="text-gray-500 dark:text-neutral-500" />
