@@ -105,7 +105,7 @@ export async function login(req, res) {
   }
 }
 
-exports.verifyToken = (req, res, next) => {
+export const verifyToken = (req, res, next) => {
   let token = req.headers.authorization?.split(' ')[1];
   if (!token) token = req.query.token;
   if (!token) {

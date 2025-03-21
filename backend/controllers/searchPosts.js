@@ -1,6 +1,6 @@
-import supabase from '../config/supabase';
+import supabase from '../config/supabase.js';
 
-const searchPosts = async (req, res) => {
+export const searchPosts = async (req, res) => {
   try {
     const { query } = req.query;
 
@@ -22,5 +22,3 @@ const searchPosts = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
-export default { searchPosts };
