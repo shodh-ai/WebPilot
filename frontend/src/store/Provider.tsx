@@ -2,12 +2,18 @@
 
 import { ReactNode } from "react";
 import { Provider } from "react-redux";
-import { store } from "./store";
+import { appStore } from "./store";
+import Pilot from "@/components/Pilot";
 
 interface ReduxProviderProps {
   children: ReactNode;
 }
 
 export function ReduxProvider({ children }: ReduxProviderProps) {
-  return <Provider store={store}>{children}</Provider>;
+  return (
+    <Provider store={appStore}>
+      <Pilot />
+      {children}
+    </Provider>
+  );
 }
