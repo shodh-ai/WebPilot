@@ -18,9 +18,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  console.log(process.env.BACKEND_PORT)
-  console.log("HELLLOOOOOOOOOOOOOOOOO")
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("1. Form submitted");
