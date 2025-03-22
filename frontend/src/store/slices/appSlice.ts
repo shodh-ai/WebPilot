@@ -6,7 +6,7 @@ interface AppState {
 }
 
 const initialState: AppState = {
-  active: false,
+  active: true,
   login: false,
 };
 
