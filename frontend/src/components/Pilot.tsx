@@ -8,13 +8,14 @@ export default function Pilot() {
   const [history, setHistory] = useState<string[]>([
     "Hello this is Rox. You personal helper for the website. How can I help you today?",
   ]);
-  const [isListening, setListening] = useState<boolean>(false);
+  const [isListening, setListening] = useState<boolean>(true);
   const [isActive, setActive] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
+    setListening(true);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -23,6 +24,7 @@ export default function Pilot() {
       try {
         setInputValue("");
         setLoading(true);
+        setListening(true);
         setHistory((prevHistory) =>
           [...prevHistory, inputValue].slice(-5),
         );
@@ -49,6 +51,22 @@ export default function Pilot() {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
   }, [history]);
+
+  useEffect(() => {
+    if (loading) {
+      setListening(true);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!loading) {
+        setListening(false);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [inputValue, loading]);
 
   return isActive ? (
     <div className="absolute top-0 right-0 max-h-[50dvh] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end">
