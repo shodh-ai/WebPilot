@@ -28,6 +28,9 @@
   },
   "dependencies": {
     "@next/env": "^15.2.3",
+    "@picovoice/porcupine-react": "^3.0.3",
+    "@picovoice/porcupine-web": "^3.0.3",
+    "@picovoice/web-voice-processor": "^4.0.9",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-navigation-menu": "^1.2.5",
     "@radix-ui/react-slot": "^1.1.2",
