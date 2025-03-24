@@ -55,3 +55,19 @@ To populate a new database, run the following command:
 ```bash
 python populate_database.py
 ```
+
+### Analyzing Interactive Routes
+
+To analyze interactive elements across your Next.js application routes, use the following command:
+```bash
+npm run analyze-routes
+```
+What the Script Does-
+
+- Scans all routes in the src/app directory
+- Identifies interactive elements in each route
+- Detects:
+   Event handlers (onClick, onSubmit, etc.)
+   State-changing functions
+   Component interactions  
+- Generates a comprehensive report of interactive elements

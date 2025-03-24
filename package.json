@@ -24,7 +24,8 @@
     "start:backend": "cd backend && node src/index.js",
     "start:frontend": "cd frontend && next start",
     "start": "npm run start:backend & npm run start:frontend",
-    "lint": "cd frontend && next lint"
+    "lint": "cd frontend && next lint",
+    "analyze-routes": "node --loader ts-node/esm scripts/analyze.ts"
   },
   "dependencies": {
     "@next/env": "^15.2.3",
@@ -33,6 +34,7 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@reduxjs/toolkit": "^2.6.1",
     "@supabase/supabase-js": "^2.19.7",
+    "autoprefixer": "^10.4.21",
     "axios": "^1.8.3",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
@@ -46,16 +48,18 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.483.0",
-    "next": "15.2.3",
+    "next": "^15.2.3",
     "next-themes": "^0.4.6",
     "nodemon": "^3.1.9",
     "npm": "^11.2.0",
     "openai": "^4.89.0",
+    "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-loading-skeleton": "^3.5.0",
     "react-redux": "^9.2.0",
+    "redux": "^5.0.1",
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
     "tw-animate-css": "^1.2.4",
@@ -63,15 +67,22 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@babel/parser": "^7.27.0",
+    "@babel/traverse": "^7.27.0",
+    "@babel/types": "^7.27.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^22.13.10",
+    "@types/babel__parser": "^7.0.0",
+    "@types/babel__traverse": "^7.20.6",
+    "@types/node": "^22.13.13",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19",
     "dotenv-cli": "^8.0.0",
+    "esbuild-register": "^3.6.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "tailwindcss": "^4.0.15",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
   }
 }
