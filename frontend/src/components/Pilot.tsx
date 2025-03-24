@@ -23,26 +23,26 @@ export default function Pilot() {
     event.preventDefault();
     if (inputValue.trim()) {
       try {
+        const userMessage = inputValue.trim();
         setInputValue("");
         setResponse("");
         setLoading(true);
         setListening(true);
-        setHistory((prevHistory) =>
-          [...prevHistory, inputValue].slice(-5),
-        );
-
-        let tempResponse = ""
-
-        await streamOpenAI(inputValue, (chunk) => {
-          tempResponse += chunk
-          setResponse(tempResponse)
+        
+        // Add user message to history immediately
+        setHistory(prevHistory => [...prevHistory, userMessage].slice(-5));
+        
+        let tempResponse = "";
+        await streamOpenAI(userMessage, (chunk) => {
+          tempResponse += chunk;
+          setResponse(tempResponse);
         });
 
-        setHistory((prevHistory) =>
-          [...prevHistory, currentResponse].slice(-5),
-        );
+        // Add the complete AI response to history
+        setHistory(prevHistory => [...prevHistory, tempResponse].slice(-5));
       } catch (error) {
         console.error("Error fetching response:", error);
+        setResponse("Sorry, there was an error processing your request.");
       } finally {
         setLoading(false);
         setListening(false);
@@ -56,7 +56,7 @@ export default function Pilot() {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
-  }, [history]);
+  }, [history, currentResponse]);
 
   useEffect(() => {
     if (loading) {
@@ -100,7 +100,7 @@ export default function Pilot() {
           </div>
         ))}
         {loading && <div
-          className={`w-[50dvh] bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
+          className={`w-[50dvh] text-gray-500 bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
         >
           {currentResponse.trim() === "" ? <Skeleton count={2} /> : currentResponse}
         </div>}
