@@ -28,6 +28,7 @@
     "analyze-routes": "node --loader ts-node/esm scripts/analyze.ts"
   },
   "dependencies": {
+    "@diffusionstudio/vits-web": "^1.0.3",
     "@next/env": "^15.2.3",
     "@picovoice/porcupine-react": "^3.0.3",
     "@picovoice/porcupine-web": "^3.0.3",
