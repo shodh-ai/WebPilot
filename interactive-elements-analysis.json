@@ -1,0 +1,214 @@
+{
+  "frontend\\src\\app\\page.tsx": [
+    {
+      "elementName": "form",
+      "elementType": "form",
+      "eventType": "onSubmit",
+      "boundFunction": "handleAddPost",
+      "componentPath": "frontend\\src\\app\\page.tsx",
+      "referencedFunctions": [
+        "setAdding",
+        "addPost",
+        "setPosts",
+        "setTitle",
+        "setContent",
+        "setAdding"
+      ],
+      "functionDetails": {
+        "complexity": 3,
+        "dependencies": [
+          "setAdding",
+          "addPost",
+          "setPosts",
+          "setTitle",
+          "setContent",
+          "setAdding"
+        ]
+      }
+    }
+  ],
+  "frontend\\src\\app\\ticket\\page.tsx": [
+    {
+      "elementName": "form",
+      "elementType": "form",
+      "eventType": "onSubmit",
+      "boundFunction": "handleSubmit",
+      "componentPath": "frontend\\src\\app\\ticket\\page.tsx",
+      "referencedFunctions": [
+        "safeParse",
+        "flatten",
+        "setErrors",
+        "setErrors",
+        "setFormData",
+        "addTicket",
+        "then",
+        "success",
+        "catch"
+      ],
+      "functionDetails": {
+        "complexity": 5,
+        "dependencies": [
+          "safeParse",
+          "flatten",
+          "setErrors",
+          "setErrors",
+          "setFormData",
+          "addTicket",
+          "then",
+          "success",
+          "catch"
+        ]
+      }
+    },
+    {
+      "elementName": "Input",
+      "elementType": "interactive-element",
+      "eventType": "onChange",
+      "boundFunction": "handleChange",
+      "componentPath": "frontend\\src\\app\\ticket\\page.tsx",
+      "referencedFunctions": [
+        "setFormData"
+      ],
+      "functionDetails": {
+        "complexity": 1,
+        "dependencies": [
+          "setFormData"
+        ]
+      }
+    },
+    {
+      "elementName": "Input",
+      "elementType": "interactive-element",
+      "eventType": "onChange",
+      "boundFunction": "handleChange",
+      "componentPath": "frontend\\src\\app\\ticket\\page.tsx",
+      "referencedFunctions": [
+        "setFormData"
+      ],
+      "functionDetails": {
+        "complexity": 1,
+        "dependencies": [
+          "setFormData"
+        ]
+      }
+    },
+    {
+      "elementName": "Textarea",
+      "elementType": "interactive-element",
+      "eventType": "onChange",
+      "boundFunction": "handleChange",
+      "componentPath": "frontend\\src\\app\\ticket\\page.tsx",
+      "referencedFunctions": [
+        "setFormData"
+      ],
+      "functionDetails": {
+        "complexity": 1,
+        "dependencies": [
+          "setFormData"
+        ]
+      }
+    }
+  ],
+  "frontend\\src\\app\\signup\\page.tsx": [
+    {
+      "elementName": "form",
+      "elementType": "form",
+      "eventType": "onSubmit",
+      "boundFunction": "handleSubmit",
+      "componentPath": "frontend\\src\\app\\signup\\page.tsx",
+      "referencedFunctions": [
+        "setLoading",
+        "setError",
+        "setError",
+        "setLoading",
+        "setError",
+        "setLoading",
+        "signup",
+        "setItem",
+        "setItem",
+        "push",
+        "setError",
+        "setLoading"
+      ],
+      "functionDetails": {
+        "complexity": 4,
+        "dependencies": [
+          "setLoading",
+          "setError",
+          "setError",
+          "setLoading",
+          "setError",
+          "setLoading",
+          "signup",
+          "setItem",
+          "setItem",
+          "push",
+          "setError",
+          "setLoading"
+        ]
+      }
+    }
+  ],
+  "frontend\\src\\app\\messages\\page.tsx": [
+    {
+      "elementName": "form",
+      "elementType": "form",
+      "eventType": "onSubmit",
+      "boundFunction": "handleSendMessage",
+      "componentPath": "frontend\\src\\app\\messages\\page.tsx",
+      "referencedFunctions": [
+        "trim",
+        "sendMessage",
+        "setMessages",
+        "Date",
+        "toISOString",
+        "setNewMessage"
+      ],
+      "functionDetails": {
+        "complexity": 4,
+        "dependencies": [
+          "trim",
+          "sendMessage",
+          "setMessages",
+          "Date",
+          "toISOString",
+          "setNewMessage"
+        ]
+      }
+    }
+  ],
+  "frontend\\src\\app\\login\\page.tsx": [
+    {
+      "elementName": "form",
+      "elementType": "form",
+      "eventType": "onSubmit",
+      "boundFunction": "handleSubmit",
+      "componentPath": "frontend\\src\\app\\login\\page.tsx",
+      "referencedFunctions": [
+        "setLoading",
+        "setError",
+        "login",
+        "setError",
+        "setItem",
+        "setItem",
+        "push",
+        "setError",
+        "setLoading"
+      ],
+      "functionDetails": {
+        "complexity": 3,
+        "dependencies": [
+          "setLoading",
+          "setError",
+          "login",
+          "setError",
+          "setItem",
+          "setItem",
+          "push",
+          "setError",
+          "setLoading"
+        ]
+      }
+    }
+  ]
+}
