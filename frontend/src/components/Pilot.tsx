@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { client } from "@/api/openai";
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
-import { useWakeWord } from '@/context/WakewordProvider'; 
-
+import { streamOpenAI } from "@/api/openai";
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+import { useWakeWord } from '@/context/WakewordProvider';
+        
 export default function Pilot() {
   const { isPilotActive } = useWakeWord();
 
@@ -16,6 +16,7 @@ export default function Pilot() {
   const [isListening, setListening] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [currentResponse, setResponse] = useState<string>("");
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -26,24 +27,29 @@ export default function Pilot() {
     event.preventDefault();
     if (inputValue.trim()) {
       try {
+        const userMessage = inputValue.trim();
         setInputValue("");
+        setResponse("");
         setLoading(true);
         setListening(true);
-        setHistory((prevHistory) =>
-          [...prevHistory, inputValue].slice(-5),
-        );
-        const response = await client.responses.create({
-          model: "gpt-3.5-turbo",
-          instructions: "You are a helpful assistant agent on the website",
-          input: [{ role: "user", content: inputValue }],
+        
+        // Add user message to history immediately
+        setHistory(prevHistory => [...prevHistory, userMessage].slice(-5));
+        
+        let tempResponse = "";
+        await streamOpenAI(userMessage, (chunk) => {
+          tempResponse += chunk;
+          setResponse(tempResponse);
         });
-        console.log(response.output_text);
-        setLoading(false);
-        setHistory((prevHistory) =>
-          [...prevHistory, response.output_text].slice(-5),
-        );
+
+        // Add the complete AI response to history
+        setHistory(prevHistory => [...prevHistory, tempResponse].slice(-5));
       } catch (error) {
         console.error("Error fetching response:", error);
+        setResponse("Sorry, there was an error processing your request.");
+      } finally {
+        setLoading(false);
+        setListening(false);
       }
     }
   };
@@ -54,7 +60,7 @@ export default function Pilot() {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
-  }, [history]);
+  }, [history, currentResponse]);
 
   useEffect(() => {
     if (loading) {
@@ -97,9 +103,9 @@ export default function Pilot() {
           </div>
         ))}
         {loading && <div
-          className={`w-[50dvh] bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
+          className={`w-[50dvh] text-gray-500 bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
         >
-          <Skeleton count={2} />
+          {currentResponse.trim() === "" ? <Skeleton count={2} /> : currentResponse}
         </div>}
       </div>
       <form onSubmit={handleSubmit} className="w-full mt-4">

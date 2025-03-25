@@ -5,12 +5,20 @@ export const client = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
-export async function testOpenAI() {
-  const response = await client.responses.create({
-    model: 'gpt-3.5-turbo',
-    instructions: 'You are a coding assistant that talks like a pirate',
-    input: 'Are semicolons optional in JavaScript?',
+export async function streamOpenAI(input: string, onStream: (chunk: string) => void) {
+  const stream = await client.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: "user", content: input }],
+    stream: true,
   });
 
-  console.log(response.output_text);
+  try {
+    for await (const chunk of stream) {
+      if (chunk.choices[0]?.delta?.content) {
+        onStream(chunk.choices[0].delta.content);
+      }
+    }
+  } catch (error) {
+    console.error("Error streaming response:", error);
+  }
 }
