@@ -1,15 +1,19 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { streamOpenAI } from "@/api/openai";
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
-
+import { useWakeWord } from '@/context/WakewordProvider';
+        
 export default function Pilot() {
+  const { isPilotActive } = useWakeWord();
+
   const [history, setHistory] = useState<string[]>([
-    "Hello this is Rox. You personal helper for the website. How can I help you today?",
+    "Hello this is Rox. Your personal helper for the website. How can I help you today?",
   ]);
   const [isListening, setListening] = useState<boolean>(true);
-  const [isActive, setActive] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [currentResponse, setResponse] = useState<string>("");
@@ -70,11 +74,10 @@ export default function Pilot() {
         setListening(false);
       }
     }, 5000);
-
     return () => clearTimeout(timeoutId);
   }, [inputValue, loading]);
 
-  return isActive ? (
+  return isPilotActive ? (
     <div className="absolute top-0 right-0 max-h-[50dvh] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end">
       <motion.div
         className="w-[3rem] h-[3rem] rounded-full bg-blue-500 shadow-md mb-4 flex-shrink-0 flex-grow-0"
