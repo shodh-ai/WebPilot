@@ -17,7 +17,7 @@
   "scripts": {
     "dev:backend": "cd backend && nodemon src/index.js",
     "dev:frontend": "cd frontend && npx dotenv -e ../.env -- next dev",
-    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build:backend": "cd backend && npm install --omit=dev",
     "build:frontend": "cd frontend && next build",
     "build": "npm run build:backend && npm run build:frontend",
