@@ -7,7 +7,7 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useWakeWord } from "@/context/WakewordProvider";
 import AudioInput from "@/components/AudioInput";
-import TTSQueue from "@/components/TTSQueue"; 
+import TTSQueue from "@/components/TTSQueue";
 
 export default function Pilot() {
   const { isPilotActive, setPilotActive, sessionId } = useWakeWord();
@@ -20,6 +20,7 @@ export default function Pilot() {
   const [currentResponse, setResponse] = useState<string>("");
   const [ttsQueue, setTtsQueue] = useState<string[]>([]);
   const [accumulatedText, setAccumulatedText] = useState<string>("");
+  const [textInput, setTextInput] = useState<string>("");
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,7 +31,9 @@ export default function Pilot() {
   }, [history, currentResponse]);
 
   useEffect(() => {
-    setHistory(["Hello this is Rox. Your personal helper for the website. How can I help you today?"]);
+    setHistory([
+      "Hello this is Rox. Your personal helper for the website. How can I help you today?",
+    ]);
     setTtsQueue([]);
     setResponse("");
     setAccumulatedText("");
@@ -45,29 +48,36 @@ export default function Pilot() {
       setLoading(true);
       setHistory((prev) => [...prev, userMessage]);
 
-      const currentSession = sessionId; 
+      const currentSession = sessionId;
       let localAccumulated = "";
-      await streamOpenAI(userMessage, (chunk) => {
-        if (currentSession !== sessionId) return;
+      await streamOpenAI(
+        userMessage,
+        (chunk) => {
+          if (currentSession !== sessionId) return;
+          localAccumulated = chunk;
+          setResponse(localAccumulated);
 
-        localAccumulated += chunk;
-        setResponse(localAccumulated);
-
-        const regex = /([^.!?]+[.!?]+)/g;
-        let match;
-        let lastIndex = 0;
-        const newSentences: string[] = [];
-        while ((match = regex.exec(localAccumulated)) !== null) {
-          newSentences.push(match[0].trim());
-          lastIndex = regex.lastIndex;
+          const regex = /([^.!?]+[.!?]+)/g;
+          let match;
+          let lastIndex = 0;
+          const newSentences: string[] = [];
+          while ((match = regex.exec(localAccumulated)) !== null) {
+            newSentences.push(match[0].trim());
+            lastIndex = regex.lastIndex;
+          }
+          if (newSentences.length > 0) {
+            setHistory((prev) => [...prev, ...newSentences]);
+            setTtsQueue((prev) => [...prev, ...newSentences]);
+            localAccumulated = localAccumulated.slice(lastIndex);
+          }
+          setAccumulatedText(localAccumulated);
+        },
+        // This callback receives the natural language formatted tool output.
+        (functionOutput) => {
+          setHistory((prev) => [...prev, functionOutput]);
+          setTtsQueue((prev) => [...prev, functionOutput]);
         }
-        if (newSentences.length > 0) {
-          setHistory((prev) => [...prev, ...newSentences]);
-          setTtsQueue((prev) => [...prev, ...newSentences]);
-          localAccumulated = localAccumulated.slice(lastIndex);
-        }
-        setAccumulatedText(localAccumulated);
-      });
+      );
       if (localAccumulated.trim()) {
         setHistory((prev) => [...prev, localAccumulated.trim()]);
       }
@@ -83,7 +93,7 @@ export default function Pilot() {
     setTtsQueue((prev) => prev.slice(1));
   };
 
-  if (!isPilotActive) return null;
+  // if (!isPilotActive) return null;
 
   return (
     <div className="absolute top-15 right-0 max-h-[50dvh] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end">
@@ -100,6 +110,27 @@ export default function Pilot() {
         animate={isListening ? { scale: [1, 1.2, 1] } : { scale: 1 }}
         transition={{ duration: 1.5, repeat: isListening ? Infinity : 0, ease: "easeInOut" }}
       />
+      {/* Text input section */}
+      <div className="w-full flex mb-4">
+        <input
+          type="text"
+          value={textInput}
+          onChange={(e) => setTextInput(e.target.value)}
+          placeholder="Type your message..."
+          className="flex-grow p-3 rounded-l-2xl bg-white bg-opacity-20 backdrop-blur-lg shadow-md border border-white border-opacity-40 text-gray-600 focus:outline-none"
+        />
+        <button
+          onClick={() => {
+            if (textInput.trim()) {
+              handleTranscription(textInput);
+              setTextInput("");
+            }
+          }}
+          className="p-3 rounded-r-2xl bg-blue-500 hover:bg-blue-600 transition text-white shadow-md border border-white border-opacity-40"
+        >
+          Send
+        </button>
+      </div>
       <div
         ref={messagesEndRef}
         className="flex flex-col overflow-x-hidden overflow-y-auto"

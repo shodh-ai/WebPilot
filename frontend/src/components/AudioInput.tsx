@@ -21,7 +21,7 @@ export default function AudioInput({ onTranscription, onAudioStart, onAudioEnd }
       recognition.lang = "en-US";
 
       recognition.onstart = () => {
-        console.log("Voice recognition started.");
+        // console.log("Voice recognition started.");
         if (onAudioStart) onAudioStart();
         inactivityTimer.current = setTimeout(() => {
           console.log("Inactivity timeout reached, stopping recognition.");
@@ -40,12 +40,12 @@ export default function AudioInput({ onTranscription, onAudioStart, onAudioEnd }
 
       recognition.onerror = (err) => {
         if (err.error != "aborted") {
-          console.error("Speech recognition error:", err);
+          // console.error("Speech recognition error:", err);
         }
       };
 
       recognition.onend = () => {
-        console.log("Voice recognition ended.");
+        // console.log("Voice recognition ended.");
         if (inactivityTimer.current) {
           clearTimeout(inactivityTimer.current);
           inactivityTimer.current = null;

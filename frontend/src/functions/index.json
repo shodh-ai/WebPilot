@@ -1,0 +1,87 @@
+[
+  {
+    "name": "addPost",
+    "description": "Adds a new post with the provided title and content.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the post."
+        }
+      },
+      "required": ["title", "content"]
+    }
+  },
+  {
+    "name": "getMessages",
+    "description": "Fetches messages both sent and received for the user. It retrieves messages from the database, formats the results, and returns them as a JSON object.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "getPosts",
+    "description": "Fetches all posts made by any user.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "getUsers",
+    "description": "Fetches details of all users.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sendMessage",
+    "description": "Sends a message to the specified receiver using the provided content.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "receiver_id": {
+          "type": "string",
+          "description": "The identifier of the message receiver."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the message to be sent."
+        }
+      },
+      "required": ["receiver_id", "content"]
+    }
+  },
+  {
+    "name": "addTicket",
+    "description": "Creates a new ticket with the provided email, department, and detail.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "mail": {
+          "type": "string",
+          "description": "The email of the user submitting the ticket."
+        },
+        "department": {
+          "type": "string",
+          "description": "The department to which the ticket is related."
+        },
+        "detail": {
+          "type": "string",
+          "description": "A detailed description of the issue or query."
+        }
+      },
+      "required": ["mail", "department", "detail"]
+    }
+  }
+]
