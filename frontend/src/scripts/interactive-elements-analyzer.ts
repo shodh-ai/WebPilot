@@ -1,14 +1,14 @@
 import fs from 'fs';
 import fsPromises from 'fs/promises';
 import path from 'path';
-import parser from '@babel/parser';
+import * as parser from '@babel/parser';
 import * as t from '@babel/types';
 import _traverse from '@babel/traverse';
 
 // Ensure proper import for ES modules
 const traverse = (_traverse as any).default || _traverse;
 
-interface InteractiveElementDetails {
+export interface InteractiveElementDetails {
   elementName: string;
   elementType?: string;
   eventType?: string;
@@ -34,7 +34,8 @@ interface ImportInfo {
   local: string[];
 }
 
-class NextJsInteractiveElementAnalyzer {
+
+export class NextJsInteractiveElementAnalyzer {
   private projectRoot: string;
   private importCache: Map<string, ImportInfo> = new Map();
   private functionDefinitionCache: Map<string, string> = new Map();
@@ -44,11 +45,49 @@ class NextJsInteractiveElementAnalyzer {
     this.projectRoot = projectRoot;
   }
 
+  async analyzeSpecificRoute(routeName: string): Promise<InteractiveElementDetails[] | null> {
+    // Adjust the paths to match your project structure
+    const possibleRoutePaths = [
+      `src/app/${routeName}/page.tsx`,
+      `src/app/${routeName}/page.js`,
+      `src/app/${routeName}/component.tsx`,
+      `src/app/${routeName}/component.js`,
+      `src/app/${routeName}.tsx`,
+      `src/app/${routeName}.js`
+    ];
+  
+    for (const routePath of possibleRoutePaths) {
+      const fullRoutePath = path.join(this.projectRoot, routePath);
+      
+      try {
+        if (this.fileExistsSync(fullRoutePath)) {
+          // Reset caches for fresh analysis
+          this.importCache.clear();
+          this.functionDefinitionCache.clear();
+          this.analyzedFiles.clear();
+  
+          // Use relative path from project root
+          const relativePath = path.relative(this.projectRoot, fullRoutePath);
+  
+          // Analyze the specific route
+          const elements = await this.analyzeRoute(relativePath);
+          
+          return elements;
+        }
+      } catch (error) {
+        console.error(`Error analyzing route ${routePath}:`, error);
+      }
+    }
+  
+    console.error(`No route found for: ${routeName}`);
+    return null;
+  }
+  
   private fileExistsSync(filePath: string): boolean {
     try {
       fs.accessSync(filePath);
       return true;
-    } catch {
+    } catch (error) {
       return false;
     }
   }

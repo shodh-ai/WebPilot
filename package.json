@@ -24,8 +24,7 @@
     "start:backend": "cd backend && node src/index.js",
     "start:frontend": "cd frontend && next start",
     "start": "npm run start:backend & npm run start:frontend",
-    "lint": "cd frontend && next lint",
-    "analyze-routes": "node --loader ts-node/esm scripts/analyze.ts"
+    "lint": "cd frontend && next lint"
   },
   "dependencies": {
     "@next/env": "^15.2.3",
