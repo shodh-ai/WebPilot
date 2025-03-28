@@ -24,7 +24,8 @@ export async function getDBData(req, res) {
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.message });
     }
-    let { user_id, tables, columns } = parsed.data;
+    let {tables, columns } = parsed.data;
+    let user_id = req.user.userId; 
     let query = '';
     query = getQuery(query, 0, tables, columns);
     const { data: tableData, error: tableError } = await supabase

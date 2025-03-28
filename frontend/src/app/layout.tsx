@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner"
-import { AuthProvider } from '@/context/AuthProvider';
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/context/AuthProvider";
 import { ReduxProvider } from "@/store/Provider";
 import { RouteProvider } from '@/context/RouteContext';
 import { Pilot } from '@/components/Pilot';
+import { WakeWordProvider } from "@/context/WakewordProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,14 @@ export default function RootLayout({
             </RouteProvider>
           </AuthProvider>
         </ReduxProvider>
+        <WakeWordProvider>
+          <ReduxProvider>
+            <AuthProvider>
+                {children}
+                <Toaster />
+            </AuthProvider>
+          </ReduxProvider>
+        </WakeWordProvider>
       </body>
     </html>
   );
