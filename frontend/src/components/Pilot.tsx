@@ -5,6 +5,9 @@ import { streamOpenAI } from "@/api/openai";
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { useRouteContext } from '../context/RouteContext';
+import { useWakeWord } from "@/context/WakewordProvider";
+import AudioInput from "@/components/AudioInput";
+import TTSQueue from "@/components/TTSQueue"; 
 
 export const Pilot: React.FC = () => {
   const { 
@@ -13,34 +16,25 @@ export const Pilot: React.FC = () => {
     routeMetadata 
   } = useRouteContext();
 
-  const [history, setHistory] = useState<string[]>([
-    "I'm Rox. Your personal helper for the website. How can I help you today?",
-
-import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { streamOpenAI } from "@/api/openai";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
-import { useWakeWord } from "@/context/WakewordProvider";
-import AudioInput from "@/components/AudioInput";
-import TTSQueue from "@/components/TTSQueue"; 
-
-export default function Pilot() {
   const { isPilotActive, setPilotActive, sessionId } = useWakeWord();
 
   const [isListening, setIsListening] = useState(false);
+  const [inputValue, setInputValue] = useState("");
   const [history, setHistory] = useState<string[]>([
     "Hello this is Rox. Your personal helper for the website. How can I help you today?",
   ]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentResponse, setResponse] = useState<string>("");
   const [initialRouteResponse, setInitialRouteResponse] = useState<string>("");
+  const [ttsQueue, setTtsQueue] = useState<string[]>([]);
+  const [accumulatedText, setAccumulatedText] = useState<string>("");
 
   const lastProcessedRouteRef = useRef<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
-    setListening(true);
+    setIsListening(true);
   };
 
   useEffect(() => {
@@ -109,7 +103,7 @@ export default function Pilot() {
         setInputValue("");
         setResponse("");
         setLoading(true);
-        setListening(true);
+        setIsListening(true);
         
         // Add user message to history immediately
         setHistory(prevHistory => [...prevHistory, userMessage].slice(-5));
@@ -141,16 +135,10 @@ export default function Pilot() {
         setResponse("Sorry, there was an error processing your request.");
       } finally {
         setLoading(false);
-        setListening(false);
+        setIsListening(false);
       }
     }
   };
-  
-  const [ttsQueue, setTtsQueue] = useState<string[]>([]);
-  
-  const [accumulatedText, setAccumulatedText] = useState<string>("");
-
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -212,9 +200,6 @@ export default function Pilot() {
     setTtsQueue((prev) => prev.slice(1));
   };
 
-  if (!isPilotActive) return null;
-
-  // Render initial route context if no chat history
   const renderInitialContent = () => {
     if (initialRouteResponse) {
       return (
@@ -228,8 +213,8 @@ export default function Pilot() {
     return null;
   };
 
-  return isActive ? (
-    <div className="fixed top-16 right-0 max-h-[calc(100vh-4rem)] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end z-50">
+  if (!isPilotActive) return null;
+
   return (
     <div className="absolute top-15 right-0 max-h-[50dvh] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end">
       <button
@@ -273,6 +258,15 @@ export default function Pilot() {
           </div>
         )}
       </div>
+      <form onSubmit={handleSubmit} className="w-full mt-4">
+        <input 
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="Type your message..."
+          className="w-full p-2 rounded-lg bg-white bg-opacity-20 backdrop-blur-lg border border-white border-opacity-40"
+        />
+      </form>
       <AudioInput
         key={sessionId.toString()}
         onTranscription={handleTranscription}
@@ -281,7 +275,7 @@ export default function Pilot() {
       />
       <TTSQueue queue={ttsQueue} onDequeue={handleDequeue} />
     </div>
-  ) : null;
-};
   );
-}
+};
+
+export default Pilot;
