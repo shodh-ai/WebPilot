@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthProvider";
 import { ReduxProvider } from "@/store/Provider";
+import { RouteProvider } from '@/context/RouteContext';
+import { Pilot } from '@/components/Pilot';
 import { WakeWordProvider } from "@/context/WakewordProvider";
 
 const geistSans = Geist({
@@ -29,6 +31,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ReduxProvider>
+          <AuthProvider>
+            <RouteProvider>
+              {children}
+              <Toaster />
+              <Pilot />
+            </RouteProvider>
+          </AuthProvider>
+        </ReduxProvider>
         <WakeWordProvider>
           <ReduxProvider>
             <AuthProvider>

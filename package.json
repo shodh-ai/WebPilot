@@ -17,15 +17,14 @@
   "scripts": {
     "dev:backend": "cd backend && nodemon src/index.js",
     "dev:frontend": "cd frontend && npx dotenv -e ../.env -- next dev",
-    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build:backend": "cd backend && npm install --omit=dev",
     "build:frontend": "cd frontend && next build",
     "build": "npm run build:backend && npm run build:frontend",
     "start:backend": "cd backend && node src/index.js",
     "start:frontend": "cd frontend && next start",
     "start": "npm run start:backend & npm run start:frontend",
-    "lint": "cd frontend && next lint",
-    "analyze-routes": "node --loader ts-node/esm scripts/analyze.ts"
+    "lint": "cd frontend && next lint"
   },
   "dependencies": {
     "@diffusionstudio/vits-web": "^1.0.3",

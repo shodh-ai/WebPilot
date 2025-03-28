@@ -6,6 +6,7 @@ import messagesRoutes from './messages.js';
 import userRoutes from './users.js';
 import authRoutes from './auth.js';
 import agentRoutes from './agent.js';
+import interactiveElementsRoutes from './interactiveElementsRoutes.js';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/messages', messagesRoutes);
 router.use('/users', userRoutes);
 router.use('/auth', authRoutes);
 router.use('/agent', agentRoutes);
+router.use('/interactive-elements', interactiveElementsRoutes);
 
 export default router;
