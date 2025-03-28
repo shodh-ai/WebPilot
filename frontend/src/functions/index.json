@@ -1,28 +1,63 @@
 [
-    {
-        "type": "function",
-        "function": {
-            "name": "getSchema",
-            "description": "Get the schema of the database being used.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": false
-            },
-            "strict": true
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "getUserData",
-            "description": "Get the current user's data from the database.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": false
-            },
-            "strict": true
-        }
+  {
+    "type": "function",
+    "function": {
+      "name": "getSchema",
+      "description": "Get the schema of the database being used.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "strict": true
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "getUserData",
+      "description": "Get the current user's data from the database.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "getDBData",
+      "description": "Get the DB's data from tables. The tables are givena nd so are the columns. The columns appearing at the first index are used to establish relations to the table next to them.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "tables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The tables contributing to the final data. Not necessary to contain all tables."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "The columns to be used from the tables. First column is used for relation."
+          }
+        },
+        "required": [
+          "tables",
+          "columns"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  }
 ]
