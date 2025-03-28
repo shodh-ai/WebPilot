@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import tools from '@/functions/index.json';
+import tools from '@/functions/index.json' assert { type: 'json' };
 import { functions } from "@/functions/index"
 
 export const client = new OpenAI({
@@ -8,7 +8,7 @@ export const client = new OpenAI({
 });
 
 export async function streamOpenAI(input: string) {
-  let messages = [{ role: "developer", content: "You answer to Rox and I have a few functions for you. I have get User data which will get you the current user data and getDBSchema that gets you the database schema." }, { role: "user", content: input }]
+  let messages = [{ role: "system", content: "You answer to Rox and I have a few functions for you. I have get User data which will get you the current user data and getDBSchema that gets you the database schema." }, { role: "user", content: input }]
   const completion = await client.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages: messages,
@@ -19,17 +19,21 @@ export async function streamOpenAI(input: string) {
 
   while (choice.finish_reason === "tool_calls") {
     let funcCall = choice.message.tool_calls
-    for (let func in funcCall){
+    for (let func in funcCall) {
       let funcName = funcCall[func].function.name
       let funcArgs = JSON.parse(funcCall[func].function.arguments)
-      let funcRes = ""
+      let funcId = funcCall[func].id
+      let funcRes = null
       if (Object.keys(funcArgs).length === 0) {
         funcRes = await functions[funcName]()
-      }else{
+      } else {
         funcRes = await functions[funcName](funcArgs)
       }
       console.log(funcRes)
-      messages.push({ role: "assistant", content:  JSON.stringify(funcRes) })
+      let data = { role: "tool", tool_call_id: funcId, content: JSON.stringify(funcRes) }
+      console.log(data)
+      messages.push(choice.message)
+      messages.push(data)
     }
     const completion = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
