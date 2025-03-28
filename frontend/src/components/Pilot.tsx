@@ -1,25 +1,56 @@
-"use client";
-
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { streamOpenAI } from "@/api/openai";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
-import { useWakeWord } from "@/context/WakewordProvider";
-import AudioInput from "@/components/AudioInput";
-import TTSQueue from "@/components/TTSQueue"; 
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 export default function Pilot() {
-  const { isPilotActive, setPilotActive, sessionId } = useWakeWord();
-
-  const [isListening, setIsListening] = useState(false);
   const [history, setHistory] = useState<string[]>([
-    "Hello this is Rox. Your personal helper for the website. How can I help you today?",
+    "Hello this is Rox. You personal helper for the website. How can I help you today?",
   ]);
+  const [isListening, setListening] = useState<boolean>(true);
+  const [isActive, setActive] = useState<boolean>(true);
+  const [inputValue, setInputValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [currentResponse, setResponse] = useState<string>("");
-  const [ttsQueue, setTtsQueue] = useState<string[]>([]);
-  const [accumulatedText, setAccumulatedText] = useState<string>("");
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+    setListening(true);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (inputValue.trim()) {
+      try {
+        const userMessage = inputValue.trim();
+        setInputValue("");
+        setResponse("");
+        setLoading(true);
+        setListening(true);
+        
+        // Add user message to history immediately
+        setHistory(prevHistory => [...prevHistory, userMessage].slice(-5));
+        
+        // let tempResponse = "";
+        // await streamOpenAI(userMessage, (chunk) => {
+        //   tempResponse += chunk;
+        //   setResponse(tempResponse);
+        // });
+        let tempResponse = await streamOpenAI(userMessage);
+
+        // Add the complete AI response to history
+        if (tempResponse)
+          setHistory(prevHistory => [...prevHistory, tempResponse].slice(-5));
+      } catch (error) {
+        console.error("Error fetching response:", error);
+        setResponse("Sorry, there was an error processing your request.");
+      } finally {
+        setLoading(false);
+        setListening(false);
+      }
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,75 +61,27 @@ export default function Pilot() {
   }, [history, currentResponse]);
 
   useEffect(() => {
-    setHistory(["Hello this is Rox. Your personal helper for the website. How can I help you today?"]);
-    setTtsQueue([]);
-    setResponse("");
-    setAccumulatedText("");
-  }, [sessionId]);
-
-  const handleTranscription = async (transcript: string) => {
-    if (!transcript.trim()) return;
-
-    try {
-      const userMessage = transcript.trim();
-      setResponse("");
-      setLoading(true);
-      setHistory((prev) => [...prev, userMessage]);
-
-      const currentSession = sessionId; 
-      let localAccumulated = "";
-      await streamOpenAI(userMessage, (chunk) => {
-        if (currentSession !== sessionId) return;
-
-        localAccumulated += chunk;
-        setResponse(localAccumulated);
-
-        const regex = /([^.!?]+[.!?]+)/g;
-        let match;
-        let lastIndex = 0;
-        const newSentences: string[] = [];
-        while ((match = regex.exec(localAccumulated)) !== null) {
-          newSentences.push(match[0].trim());
-          lastIndex = regex.lastIndex;
-        }
-        if (newSentences.length > 0) {
-          setHistory((prev) => [...prev, ...newSentences]);
-          setTtsQueue((prev) => [...prev, ...newSentences]);
-          localAccumulated = localAccumulated.slice(lastIndex);
-        }
-        setAccumulatedText(localAccumulated);
-      });
-      if (localAccumulated.trim()) {
-        setHistory((prev) => [...prev, localAccumulated.trim()]);
-      }
-    } catch (error) {
-      console.error("Error fetching response:", error);
-      setResponse("Sorry, there was an error processing your request.");
-    } finally {
-      setLoading(false);
+    if (loading) {
+      setListening(true);
     }
-  };
+  }, [loading]);
 
-  const handleDequeue = () => {
-    setTtsQueue((prev) => prev.slice(1));
-  };
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!loading) {
+        setListening(false);
+      }
+    }, 5000);
 
-  if (!isPilotActive) return null;
+    return () => clearTimeout(timeoutId);
+  }, [inputValue, loading]);
 
-  return (
-    <div className="absolute top-15 right-0 max-h-[50dvh] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end">
-      <button
-        onClick={() => setPilotActive(false)}
-        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-full text-gray-500 hover:bg-opacity-40 transition"
-      >
-        ✕
-      </button>
+  return isActive ? (
+    <div className="absolute top-0 right-0 max-h-[50dvh] max-w-[50dvw] p-4 flex flex-col overflow-hidden h-max w-max justify-center items-end bg-white z-1">
       <motion.div
-        className={`w-[3rem] h-[3rem] rounded-full shadow-md mb-4 flex-shrink-0 flex-grow-0 ${
-          isListening ? "bg-blue-500" : "bg-gray-500"
-        }`}
-        animate={isListening ? { scale: [1, 1.2, 1] } : { scale: 1 }}
-        transition={{ duration: 1.5, repeat: isListening ? Infinity : 0, ease: "easeInOut" }}
+        className="w-[3rem] h-[3rem] rounded-full bg-blue-500 shadow-md mb-4 flex-shrink-0 flex-grow-0"
+        animate={{ scale: isListening ? [1, 1.2, 1] : 1 }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
       />
       <div
         ref={messagesEndRef}
@@ -113,26 +96,26 @@ export default function Pilot() {
         {history.map((message, index) => (
           <div
             key={index}
-            className={`flex ${
-              index % 2 === 0 ? "justify-end text-gray-500" : "justify-start text-gray-600"
-            } w-[50dvh] bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
+            className={`flex ${index % 2 === 0 ? "justify-end text-gray-500" : "justify-start text-gray-600"} w-[50dvh] bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
           >
             <p>{message}</p>
           </div>
         ))}
-        {loading && (
-          <div className="w-[50dvh] text-gray-500 bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40">
-            {currentResponse.trim() === "" ? <Skeleton count={2} /> : currentResponse}
-          </div>
-        )}
+        {loading && <div
+          className={`w-[50dvh] text-gray-500 bg-white bg-opacity-20 backdrop-blur-lg shadow-md rounded-2xl p-3 text-md font-semibold mb-4 border border-white border-opacity-40`}
+        >
+          {currentResponse.trim() === "" ? <Skeleton count={2} /> : currentResponse}
+        </div>}
       </div>
-      <AudioInput
-        key={sessionId.toString()}
-        onTranscription={handleTranscription}
-        onAudioStart={() => setIsListening(true)}
-        onAudioEnd={() => setIsListening(false)}
-      />
-      <TTSQueue queue={ttsQueue} onDequeue={handleDequeue} />
+      <form onSubmit={handleSubmit} className="w-full mt-4">
+        <input
+          type="text"
+          className="w-full p-2 border border-gray-300 rounded-md"
+          placeholder="Type your message here..."
+          value={inputValue}
+          onChange={handleInputChange}
+        />
+      </form>
     </div>
-  );
+  ) : null;
 }

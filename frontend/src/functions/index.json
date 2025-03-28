@@ -1,0 +1,28 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "getSchema",
+            "description": "Get the schema of the database being used.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            },
+            "strict": true
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "getUserData",
+            "description": "Get the current user's data from the database.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            },
+            "strict": true
+        }
+    }
+]
