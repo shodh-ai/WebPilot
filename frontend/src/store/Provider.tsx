@@ -3,7 +3,8 @@
 import { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { appStore } from "./store";
-import Pilot from "@/components/Pilot";
+import {Pilot} from "@/components/Pilot";
+
 
 interface ReduxProviderProps {
   children: ReactNode;

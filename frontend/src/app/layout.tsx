@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from '@/context/AuthProvider';
 import { ReduxProvider } from "@/store/Provider";
+import { RouteProvider } from '@/context/RouteContext';
+import { Pilot } from '@/components/Pilot';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +32,11 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ReduxProvider>
           <AuthProvider>
-            {children}
-            <Toaster />
+            <RouteProvider>
+              {children}
+              <Toaster />
+              <Pilot />
+            </RouteProvider>
           </AuthProvider>
         </ReduxProvider>
       </body>
