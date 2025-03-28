@@ -2,7 +2,7 @@
   {
     "type": "function",
     "function": {
-      "name": "getSchema",
+      "name": "getDBSchema",
       "description": "Get the schema of the database being used.",
       "parameters": {
         "type": "object",

@@ -3,7 +3,7 @@ import { getDBSchema } from "./getSchema"
 import { getDBData } from "./getDBData"
 
 export const functions = {
-  "getSchema": getDBSchema,
+  "getDBSchema": getDBSchema,
   "getUserData": getUserData,
   "getDBData": getDBData
 }
