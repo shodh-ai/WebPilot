@@ -12,7 +12,7 @@ export async function getPosts() {
         },
       }
     );
-    console.log(response.data);
+    // console.log(response.data);
     const posts: Post[] = response.data;
     return posts;
   } catch (error) {
