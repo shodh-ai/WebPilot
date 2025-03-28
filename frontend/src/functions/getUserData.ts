@@ -4,6 +4,7 @@ export const getUserData = async () => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.post("http://localhost:8000/api/agent/getUserData",
+        {},
         {
             headers: {
                 "Content-Type": "application/json",

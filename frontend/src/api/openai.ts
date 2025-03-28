@@ -29,7 +29,7 @@ export async function streamOpenAI(input: string) {
         funcRes = await functions[funcName](funcArgs)
       }
       console.log(funcRes)
-      messages.push({ role: "assistant", content: funcRes })
+      messages.push({ role: "assistant", content:  JSON.stringify(funcRes) })
     }
     const completion = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
