@@ -24,9 +24,14 @@ GENERAL INSTRUCTIONS:
    - Every table in 'getDBData' must have at least one valid column specified.
 5. Disambiguation of Foreign Keys:
    - If a relation table has multiple foreign keys referencing different tables, explicitly choose the correct join key by placing it as the first element in that table’s column array.
-   - For example, in a table like "query-user" or "post-user", if filtering is on the base "User", then the first column must be "user".
+   - For example, in a table like "query-user" or "post-user", if filtering is on the base "User", then the first column must be the foreign key that relates to "User".
 6. Separation of Calls: Do NOT combine calls to 'getDBSchema' and 'getDBData' in a single query. Retrieve the schema first, analyze it, then call 'getDBData'.
 7. Do not include additional tables unless there is a valid relationship according to the schema.
+8. Column Selection Based on Table Relationships:
+   - When constructing join queries, include only the columns that are actually present in the table as defined by the schema.
+   - Do not assume that columns available in a parent table are available in a relation table.
+   - Always verify that the join key (the first element in the columns array) corresponds to a valid foreign key relationship.
+   - Ensure that any additional columns listed for a table exist in that table to avoid errors.
 
 THREE-SHOT EXAMPLES:
 
@@ -43,9 +48,9 @@ Expected 'getDBData' Payload:
 Reasoning:
 - The base "User" is implicit (via .from('User')), so it is not included in the join chain.
 - The relation table "message-user" is listed first because it holds the foreign keys linking a user to a message.
-- The first column in "message-user" is "sender", explicitly indicating the join with the base "User".
+- The first column in "message-user" is chosen to correctly indicate the join with the base "User".
 - The parent table "Message" is then included to retrieve detailed message information.
-- This payload directly follows the rules for relation enforcement, table ordering, and disambiguation.
+- Additionally, the selected columns are verified against the schema, ensuring that only columns existing in each table are requested.
 
 Example 2:
 User Query: "get me the last 3 latest queries raised by any user"
@@ -60,9 +65,9 @@ Expected 'getDBData' Payload:
 Reasoning:
 - The base "User" is implicit, so only additional tables are included.
 - The relation table "query-user" is listed first as it links the base "User" to the queries.
-- The first column in "query-user" is "user", ensuring the join is correctly made with the base "User".
+- The first column in "query-user" is chosen to ensure the join is correctly made with the base "User".
 - The parent table "Query" is then added to retrieve full query details.
-- This payload adheres to our instructions regarding join ordering and explicit disambiguation.
+- Additionally, the columns selected for the relation table are verified to exist in that table per the schema, avoiding inclusion of columns that belong only to the parent table.
 
 Example 3:
 User Query: "what was the details of post about AI Technology? get me the details of the post"
@@ -77,9 +82,9 @@ Expected 'getDBData' Payload:
 Reasoning:
 - The base "User" table is implicit; therefore, the join chain includes only the additional tables.
 - The relation table "post-user" is listed first because it contains the foreign keys connecting to "User".
-- The first column in "post-user" is "user", ensuring the join is made using the correct foreign key.
+- The first column in "post-user" is chosen to ensure the join is made using the correct foreign key.
 - The parent table "Posts" is listed next to provide the detailed post data.
-- This structure follows our general instructions for table ordering and disambiguation of join keys.
+- Additionally, the selection of columns in each table respects the schema, ensuring that no invalid columns are requested.
 
 Follow these instructions exactly when constructing any request.`
     },
