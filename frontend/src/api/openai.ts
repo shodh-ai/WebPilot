@@ -1,17 +1,48 @@
 import OpenAI from "openai";
 import tools from "@/functions/index.json" assert { type: "json" };
-import { functions } from "@/functions/index";
+import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
+import executeUICommand from "@/utils/executor";
+
+// Define the interface for route context
+export interface RouteContext {
+  route: string;
+  pageDescription?: string;
+  context?: { [key: string]: any };
+  interactiveElements?: Array<{
+    elementName: string;
+    elementType: string;
+    eventType: string;
+    boundFunction: string;
+    referencedFunctions: string[];
+  }>;
+}
 
 export const client = new OpenAI({
   apiKey: process.env["NEXT_PUBLIC_OPENAI_API_KEY"],
   dangerouslyAllowBrowser: true,
 });
 
-export async function streamOpenAI(input: string) {
-  let messages = [
-    {
-      role: "system",
-      content: `You are a database LLM with three functions: 'getDBData', 'getUserData', and 'getDBSchema'. Follow these strict rules without deviation:
+// Robust JSON parser that removes markdown code block markers if present.
+function parseJSONResponse(response: string): any {
+  let trimmed = response.trim();
+  if (trimmed.startsWith("```")) {
+    trimmed = trimmed.replace(/^```(json)?/i, "").trim();
+    if (trimmed.endsWith("```")) {
+      trimmed = trimmed.slice(0, -3).trim();
+    }
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch (err) {
+    console.error("[parseJSONResponse] Error parsing JSON:", err, "Response:", trimmed);
+    return null;
+  }
+}
+
+// Create a system prompt that incorporates the route context dynamically.
+// (Retained exactly as before, including the three-shot examples.)
+export const createSystemPrompt = (routeContext: RouteContext | null = null) => {
+  const dbSystemPrompt = ` Choice 1 : You are a database LLM with three functions: 'getDBData', 'getUserData', and 'getDBSchema'. Follow these strict rules without deviation:
 
 GENERAL INSTRUCTIONS:
 1. Schema Retrieval First: Always call 'getDBSchema' before using 'getDBData' to obtain the exact table names and columns. Do NOT assume or invent any schema details.
@@ -84,49 +115,126 @@ Reasoning:
 - The relation table "post-user" is listed first because it contains the foreign keys connecting to "User".
 - The first column in "post-user" is chosen to ensure the join is made using the correct foreign key.
 - The parent table "Posts" is listed next to provide the detailed post data.
-- Additionally, the selection of columns in each table respects the schema, ensuring that no invalid columns are requested.
+- Additionally, the selection of columns in each table respects the schema, ensuring that no invalid columns are requested.`;
 
-Follow these instructions exactly when constructing any request.`
-    },
+  const webAssistantPrompt = routeContext ? 
+    ` Choice 2 : You are Rox, a helpful AI assistant for a web application.
+You are currently on the ${routeContext.route} page.
+Page Description: ${routeContext.pageDescription || 'Not provided'}
+Page Context: ${JSON.stringify(routeContext.context || {})}
+Interactive Elements: ${JSON.stringify(routeContext.interactiveElements || [])}
+
+Your primary goal is to:
+- Provide context-specific guidance for this page
+- Help users understand page features and actions
+- Offer step-by-step assistance
+- Be conversational and proactively helpful` : '';
+
+  const uiExecutionPrompt = `Choice 3 : UI EXECUTION MODE:
+If the user query is intended to update the UI state (for example, "set title as: hi"), output a JSON object following exactly this schema:
+
+{
+  "action": "ui_execution",
+  "function": "<functionName>",
+  "arguments": {
+    // function arguments here
+  }
+}
+In case of UI Execution mode, only give a JSON structure like above and nothing else.
+Guidelines:
+- The "function" value must match one of the interactive functions provided in the route context.
+- The "arguments" object must include only the keys required for that function.
+- IMPORTANT: Do not output any additional text—only a valid JSON structure as described.`;
+
+  return `${dbSystemPrompt}
+
+${webAssistantPrompt ? webAssistantPrompt : ''}
+
+${uiExecutionPrompt}
+
+If the user query appears to be requesting database information, use the database functions following the specified rules.
+If the user query appears to be asking for help with navigation or understanding the current page, respond as Rox the web assistant.
+If the user query appears to be instructing a UI update, output a JSON structure following the schema above.`;
+};
+
+// Main streaming function with classification logging
+export async function streamOpenAI(input: string, routeContext: RouteContext | null = null): Promise<string | null> {
+  console.log("[streamOpenAI] Called with input:", input, "and routeContext:", routeContext);
+  let messages: ChatCompletionMessageParam[] = [
+    { role: "system", content: createSystemPrompt(routeContext) },
     { role: "user", content: input },
   ];
-  const completion = await client.chat.completions.create({
+  console.log("[streamOpenAI] Initial messages:", messages);
+  
+  const typedTools = tools as ChatCompletionTool[];
+  let choice = (await client.chat.completions.create({
     model: "gpt-3.5-turbo",
-    messages: messages,
-    tools: tools,
+    messages,
+    tools: typedTools,
     tool_choice: "auto",
-  });
-  let choice = completion.choices[0];
+  })).choices[0];
+  console.log("[streamOpenAI] Initial choice received:", choice);
 
-  while (choice.finish_reason === "tool_calls") {
-    let funcCall = choice.message.tool_calls;
-    for (let func in funcCall) {
-      console.log(funcCall[func]);
-      let funcName = funcCall[func].function.name;
-      let funcArgs = JSON.parse(funcCall[func].function.arguments);
-      let funcId = funcCall[func].id;
+  while (choice.finish_reason === "tool_calls" && choice.message.tool_calls) {
+    const funcCalls = choice.message.tool_calls;
+    console.log("[streamOpenAI] Processing tool_calls:", funcCalls);
+    
+    for (let i = 0; i < funcCalls.length; i++) {
+      const funcCall = funcCalls[i];
+      const funcName = funcCall.function.name;
+      const funcArgs = JSON.parse(funcCall.function.arguments);
+      const funcId = funcCall.id;
+      console.log(`[streamOpenAI] Tool call ${i + 1}/${funcCalls.length}:`, { funcName, funcArgs, funcId });
       let funcRes = null;
+      
+      const typedFunctions = {} as { [key: string]: Function };
+      
       if (Object.keys(funcArgs).length === 0) {
-        funcRes = await functions[funcName]();
+        console.log(`[streamOpenAI] Calling function ${funcName} with no arguments.`);
+        funcRes = await typedFunctions[funcName]?.();
       } else {
-        funcRes = await functions[funcName](funcArgs);
+        console.log(`[streamOpenAI] Calling function ${funcName} with arguments:`, funcArgs);
+        funcRes = await typedFunctions[funcName]?.(funcArgs);
       }
-      let data = {
+      
+      console.log(`[streamOpenAI] Result from function ${funcName}:`, funcRes);
+      
+      messages.push(choice.message);
+      messages.push({
         role: "tool",
         tool_call_id: funcId,
         content: JSON.stringify(funcRes),
-      };
-      messages.push(choice.message);
-      messages.push(data);
+      });
+      console.log("[streamOpenAI] Updated messages after tool call:", messages);
     }
-    const completion = await client.chat.completions.create({
+    
+    choice = (await client.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: messages,
-      tools: tools,
+      messages,
+      tools: typedTools,
       tool_choice: "auto",
-    });
-    choice = completion.choices[0];
+    })).choices[0];
+    console.log("[streamOpenAI] Updated choice after tool calls:", choice);
   }
 
-  if (choice.finish_reason === "stop") return choice.message.content;
+  console.log("[streamOpenAI] Final message content:", choice.message.content);
+  
+  // Classification: Attempt to parse the final response and classify it.
+  const parsed = parseJSONResponse(choice.message.content);
+  if (parsed) {
+    console.log("[streamOpenAI] Parsed final message as JSON:", parsed);
+    if (parsed.action && parsed.action === "ui_execution") {
+      console.log("[streamOpenAI] Classified response as UI execution mode.");
+      console.log("[streamOpenAI] Redirecting to execute UI command...");
+      const result = await executeUICommand(parsed);
+      console.log("[streamOpenAI] Result from executeUICommand:", result);
+      return `UI command executed: ${JSON.stringify(result)}`;
+    } else {
+      console.log("[streamOpenAI] Parsed JSON does not indicate UI execution. Treating as guidance/database response.");
+      return choice.message.content;
+    }
+  } else {
+    console.log("[streamOpenAI] No valid JSON detected. Classifying response as plain text (likely page guidance or database query).");
+    return choice.message.content;
+  }
 }

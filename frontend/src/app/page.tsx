@@ -14,6 +14,18 @@ export default function Home() {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [adding, setAdding] = useState<boolean>(false);
+
+  useEffect(() => {
+    (window as any).__UI_STATE_MAPPING__ = {
+      setTitle,      
+      setContent,   
+      handleAddPost, 
+    };
+    console.log("Global UI state mapping set:", (window as any).__UI_STATE_MAPPING__);
+    return () => {
+      delete (window as any).__UI_STATE_MAPPING__;
+    };
+  }, [setTitle, setContent, handleAddPost]);
   
   // Route analysis states
   const [routeName, setRouteName] = useState<string>("");
