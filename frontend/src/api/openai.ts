@@ -1,17 +1,30 @@
 import OpenAI from "openai";
 import tools from "@/functions/index.json" assert { type: "json" };
 import { functions } from "@/functions/index";
+import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
+
+// Define the interface for route context
+export interface RouteContext {
+  route: string;
+  pageDescription?: string;
+  context?: { [key: string]: any };
+  interactiveElements?: Array<{
+    elementName: string;
+    elementType: string;
+    eventType: string;
+    boundFunction: string;
+    referencedFunctions: string[];
+  }>;
+}
 
 export const client = new OpenAI({
   apiKey: process.env["NEXT_PUBLIC_OPENAI_API_KEY"],
   dangerouslyAllowBrowser: true,
 });
 
-export async function streamOpenAI(input: string) {
-  let messages = [
-    {
-      role: "system",
-      content: `You are a database LLM with three functions: 'getDBData', 'getUserData', and 'getDBSchema'. Follow these strict rules without deviation:
+// Function to create context-aware system prompt based on the current route/context
+export const createSystemPrompt = (routeContext: RouteContext | null = null) => {
+  const dbSystemPrompt = `You are a database LLM with three functions: 'getDBData', 'getUserData', and 'getDBSchema'. Follow these strict rules without deviation:
 
 GENERAL INSTRUCTIONS:
 1. Schema Retrieval First: Always call 'getDBSchema' before using 'getDBData' to obtain the exact table names and columns. Do NOT assume or invent any schema details.
@@ -23,7 +36,7 @@ GENERAL INSTRUCTIONS:
    - The table being referenced (parent table) MUST come after the relation table.
    - Every table in 'getDBData' must have at least one valid column specified.
 5. Disambiguation of Foreign Keys:
-   - If a relation table has multiple foreign keys referencing different tables, explicitly choose the correct join key by placing it as the first element in that table’s column array.
+   - If a relation table has multiple foreign keys referencing different tables, explicitly choose the correct join key by placing it as the first element in that table's column array.
    - For example, in a table like "query-user" or "post-user", if filtering is on the base "User", then the first column must be the foreign key that relates to "User".
 6. Separation of Calls: Do NOT combine calls to 'getDBSchema' and 'getDBData' in a single query. Retrieve the schema first, analyze it, then call 'getDBData'.
 7. Do not include additional tables unless there is a valid relationship according to the schema.
@@ -84,49 +97,91 @@ Reasoning:
 - The relation table "post-user" is listed first because it contains the foreign keys connecting to "User".
 - The first column in "post-user" is chosen to ensure the join is made using the correct foreign key.
 - The parent table "Posts" is listed next to provide the detailed post data.
-- Additionally, the selection of columns in each table respects the schema, ensuring that no invalid columns are requested.
+- Additionally, the selection of columns in each table respects the schema, ensuring that no invalid columns are requested.`;
 
-Follow these instructions exactly when constructing any request.`
+  // If we have route context, create a web assistant prompt
+  const webAssistantPrompt = routeContext ? 
+    `You are Rox, a helpful AI assistant for a web application.
+    You are currently on the ${routeContext.route} page.
+    Page Description: ${routeContext.pageDescription || 'Not provided'}
+    Page Context: ${JSON.stringify(routeContext.context || {})}
+    Interactive Elements: ${JSON.stringify(routeContext.interactiveElements || [])}
+
+    Your primary goal is to:
+    - Provide context-specific guidance for this page
+    - Help users understand page features and actions
+    - Offer step-by-step assistance
+    - Be conversational and proactively helpful` : '';
+
+  // Combine the prompts with appropriate context switching
+  return `${dbSystemPrompt}
+
+${webAssistantPrompt ? webAssistantPrompt : ''}
+
+If the user query appears to be requesting database information, use the database functions following the specified rules.
+If the user query appears to be asking for help with navigation or understanding the current page, respond as Rox the web assistant.
+Always provide helpful, concise responses appropriate to the context of the query.`;
+};
+
+// Main streaming function with context support
+export async function streamOpenAI(input: string, routeContext: RouteContext | null = null) {
+  let messages: ChatCompletionMessageParam[] = [
+    {
+      role: "system",
+      content: createSystemPrompt(routeContext)
     },
     { role: "user", content: input },
   ];
+  
+  const typedTools = tools as ChatCompletionTool[];
+  
   const completion = await client.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages: messages,
-    tools: tools,
+    tools: typedTools,
     tool_choice: "auto",
   });
+  
   let choice = completion.choices[0];
 
-  while (choice.finish_reason === "tool_calls") {
-    let funcCall = choice.message.tool_calls;
-    for (let func in funcCall) {
-      console.log(funcCall[func]);
-      let funcName = funcCall[func].function.name;
-      let funcArgs = JSON.parse(funcCall[func].function.arguments);
-      let funcId = funcCall[func].id;
+  while (choice.finish_reason === "tool_calls" && choice.message.tool_calls) {
+    let funcCalls = choice.message.tool_calls;
+    
+    for (let i = 0; i < funcCalls.length; i++) {
+      const funcCall = funcCalls[i];
+      let funcName = funcCall.function.name;
+      let funcArgs = JSON.parse(funcCall.function.arguments);
+      let funcId = funcCall.id;
       let funcRes = null;
+      
+      // Type assertion to access functions with string index
+      const typedFunctions = functions as {[key: string]: Function};
+      
       if (Object.keys(funcArgs).length === 0) {
-        funcRes = await functions[funcName]();
+        funcRes = await typedFunctions[funcName]();
       } else {
-        funcRes = await functions[funcName](funcArgs);
+        funcRes = await typedFunctions[funcName](funcArgs);
       }
-      let data = {
+      
+      // Add tool response as a message with correct typing
+      messages.push(choice.message);
+      messages.push({
         role: "tool",
         tool_call_id: funcId,
         content: JSON.stringify(funcRes),
-      };
-      messages.push(choice.message);
-      messages.push(data);
+      });
     }
+    
     const completion = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: messages,
-      tools: tools,
+      tools: typedTools,
       tool_choice: "auto",
     });
+    
     choice = completion.choices[0];
   }
 
   if (choice.finish_reason === "stop") return choice.message.content;
+  return null; // Handle case where finish_reason is neither "tool_calls" nor "stop"
 }
