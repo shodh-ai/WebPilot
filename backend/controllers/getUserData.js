@@ -1,7 +1,7 @@
 import supabase from "../config/supabase.js";
 
 export async function getUserData(req,res){
-    const {user_id} = req.body;
+    const user_id = req.user.userId;
     const {data,error} = await supabase
     .from('User')
     .select('mail,created_at')

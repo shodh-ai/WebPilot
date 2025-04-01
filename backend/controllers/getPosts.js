@@ -9,7 +9,6 @@ export async function getPosts(req, res) {
   if (error) {
     res.status(500).json({ error: error.message });
   } else {
-    console.log(data);
     res.json(data);
   }
 }
