@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import path from 'path';
-import fs from 'fs';
-import fsPromises from 'fs/promises';
 import NextJsInteractiveElementAnalyzer, { InteractiveElementDetails } from '@/scripts/interactive-elements-analyzer';
 
-// Predefined route descriptions and contexts
-const routeDescriptions: { [key: string]: { 
-  description: string, 
-  context: { [key: string]: any } 
-}} = {
+const routeDescriptions: { 
+  [key: string]: { 
+    description: string, 
+    context: { [key: string]: any } 
+  }
+} = {
   '/': {
     description: 'Main dashboard where users can create and manage posts',
     context: {
@@ -89,28 +88,35 @@ const routeDescriptions: { [key: string]: {
   }
 };
 
-export async function GET(request: Request) {
-  // Log the incoming request details
-  console.log('Incoming Request URL:', request.url);
-  
-  // Convert to NextRequest for accessing search params
-  const nextRequest = new URL(request.url);
-  const route = nextRequest.searchParams.get('route');
+// Helper function to extract element identifiers
+function extractElementIdentifiers(element: any): { 
+  elementId?: string, 
+  elementClass?: string, 
+  elementText?: string 
+} {
+  // Extract identifiers from DOM or component props if available
+  return {
+    elementId: element.props?.id || element.attributes?.id || '',
+    elementClass: element.props?.className || element.attributes?.class || '',
+    elementText: element.textContent || element.props?.children || ''
+  };
+}
 
-  // Validate route parameter
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const route = url.searchParams.get('route');
+
   if (!route) {
     console.error('No route parameter provided');
     return NextResponse.json({ 
-      error: 'Invalid route parameter' 
+      error: 'Missing route parameter' 
     }, { status: 400 });
   }
 
   try {
-    // Resolve project root
     const projectRoot = path.resolve(process.cwd());
     
     console.log('Analyzing Route:', route);
-    console.log('Project Root:', projectRoot);
 
     // Initialize analyzer
     const analyzer = new NextJsInteractiveElementAnalyzer(projectRoot);
@@ -118,57 +124,68 @@ export async function GET(request: Request) {
     // Analyze route
     const routeElements = await analyzer.analyzeSpecificRoute(route);
 
-    // Get predefined route description and context
-    const routeDescription = routeDescriptions[route] || {
-      description: 'Generic page',
+    const routeMetadata = routeDescriptions[route] || {
+      description: `Page for ${route}`,
       context: {}
     };
 
     if (!routeElements || routeElements.length === 0) {
       return NextResponse.json({ 
-        message: `No elements found for route: ${route}`, 
+        route: route,
         elements: [],
         metadata: {
-          pageDescription: routeDescription.description,
-          context: routeDescription.context
+          pageDescription: routeMetadata.description,
+          context: routeMetadata.context
         }
-      }, { status: 404 });
+      });
     }
 
-    // Transform elements
-    const formattedElements = routeElements.map((element: InteractiveElementDetails) => ({
-      elementName: element.elementName,
-      elementType: element.elementType,
-      eventType: element.eventType,
-      boundFunction: element.boundFunction,
-      componentPath: element.componentPath,
-      referencedFunctions: element.referencedFunctions,
-      functionDetails: {
-        complexity: element.functionDetails?.complexity,
-        dependencies: element.functionDetails?.dependencies
-      }
-    }));
+    // Transform elements to include information for element selection
+    const enhancedElements = routeElements.map((element: InteractiveElementDetails) => {
+      const identifiers = extractElementIdentifiers(element);
+      
+      return {
+        elementName: element.elementName || '',
+        elementType: element.elementType || '',
+        eventType: element.eventType || '',
+        boundFunction: element.boundFunction || '',
+        referencedFunctions: element.referencedFunctions || [],
+        // Include identifiers to help with element selection
+        elementId: identifiers.elementId,
+        elementClass: identifiers.elementClass,
+        elementText: identifiers.elementText
+      };
+    });
 
     // Return analysis result with metadata
     return NextResponse.json({ 
       route: route,
-      elements: formattedElements,
+      elements: enhancedElements,
       metadata: {
-        pageDescription: routeDescription.description,
-        context: routeDescription.context
+        pageDescription: routeMetadata.description,
+        context: routeMetadata.context
       }
     });
 
   } catch (error) {
-    console.error('Unexpected Route Analysis Error:', error);
+    console.error('Route Analysis Error:', error);
     return NextResponse.json({ 
-      error: 'Unexpected error occurred',
-      details: String(error)
+      error: 'Failed to analyze route',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      route: route
     }, { status: 500 });
   }
 }
 
-// Optional: Add POST method if needed for future extensions
+export async function HEAD(request: Request) {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
 export async function POST(request: Request) {
   return NextResponse.json({ 
     error: 'Method not supported' 

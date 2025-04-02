@@ -7,9 +7,8 @@
       "parameters": {
         "type": "object",
         "properties": {},
-        "additionalProperties": false
-      },
-      "strict": true
+        "required": []
+      }
     }
   },
   {
@@ -20,16 +19,15 @@
       "parameters": {
         "type": "object",
         "properties": {},
-        "additionalProperties": false
-      },
-      "strict": true
+        "required": []
+      }
     }
   },
   {
     "type": "function",
     "function": {
       "name": "getDBData",
-      "description": "Get the DB's data from tables. The tables are givena nd so are the columns. The columns appearing at the first index are used to establish relations to the table next to them.",
+      "description": "Get the DB's data from tables. The tables are given and so are the columns. The columns appearing at the first index are used to establish relations to the table next to them.",
       "parameters": {
         "type": "object",
         "properties": {
@@ -54,10 +52,146 @@
         "required": [
           "tables",
           "columns"
-        ],
-        "additionalProperties": false
-      },
-      "strict": true
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "navigateTo",
+      "description": "Navigate to a different route/page in the application",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "route": {
+            "type": "string",
+            "description": "The route to navigate to (e.g., '/messages', '/', '/login', '/signup', '/ticket')"
+          }
+        },
+        "required": ["route"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "fillInput",
+      "description": "Fill an input field with a specified value",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "object",
+            "properties": {
+              "elementName": {
+                "type": "string",
+                "description": "The name attribute of the element"
+              },
+              "elementType": {
+                "type": "string",
+                "description": "The type of element (e.g., 'input', 'textarea', 'select')"
+              },
+              "elementId": {
+                "type": "string",
+                "description": "The ID of the element"
+              },
+              "elementClass": {
+                "type": "string",
+                "description": "The CSS class of the element"
+              },
+              "text": {
+                "type": "string",
+                "description": "Text content that the element contains or displays"
+              }
+            },
+            "description": "Selector to identify the input element"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value to fill into the input"
+          }
+        },
+        "required": ["selector", "value"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "clickElement",
+      "description": "Click on an interactive element like a button or link",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "object",
+            "properties": {
+              "elementName": {
+                "type": "string",
+                "description": "The name attribute of the element"
+              },
+              "elementType": {
+                "type": "string",
+                "description": "The type of element (e.g., 'button', 'a')"
+              },
+              "elementId": {
+                "type": "string",
+                "description": "The ID of the element"
+              },
+              "elementClass": {
+                "type": "string",
+                "description": "The CSS class of the element"
+              },
+              "text": {
+                "type": "string",
+                "description": "Text content that the element contains or displays"
+              }
+            },
+            "description": "Selector to identify the element to click"
+          }
+        },
+        "required": ["selector"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "submitForm",
+      "description": "Submit a form",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "object",
+            "properties": {
+              "elementName": {
+                "type": "string",
+                "description": "The name attribute of the form"
+              },
+              "elementId": {
+                "type": "string",
+                "description": "The ID of the form"
+              },
+              "elementClass": {
+                "type": "string",
+                "description": "The CSS class of the form"
+              },
+              "elementType": {
+                "type": "string",
+                "description": "The type of element (should be 'form')"
+              },
+              "text": {
+                "type": "string",
+                "description": "Text content that the form contains"
+              }
+            },
+            "description": "Selector to identify the form"
+          }
+        },
+        "required": ["selector"]
+      }
     }
   }
 ]
