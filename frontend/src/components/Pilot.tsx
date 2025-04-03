@@ -6,6 +6,25 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useRouteContext } from '../context/RouteContext';
 
+const getLiveDOMInteractiveElements = () => {
+  const selectors = 'button, input, textarea, a, form';
+  const elements = Array.from(document.querySelectorAll(selectors));
+  return elements
+    .filter(el => {
+      if (el.tagName.toLowerCase() === "input") {
+        const placeholder = el.getAttribute("placeholder") || "";
+        return placeholder.trim().toLowerCase() !== "type your message...";
+      }
+      return true;
+    })
+    .map(el => ({
+      elementType: el.tagName.toLowerCase(),
+      elementId: el.id || "",
+      elementText: (el.innerText || (el as HTMLInputElement).value || "").trim()
+    }));
+};
+
+
 export const Pilot: React.FC = () => {
   const {
     currentRoute,
@@ -34,11 +53,14 @@ export const Pilot: React.FC = () => {
       referencedFunctions: el.referencedFunctions
     }));
 
+    const liveInteractiveElements = getLiveDOMInteractiveElements();
+    
     return {
       route: currentRoute,
       pageDescription: routeMetadata.pageDescription,
       context: routeMetadata.context,
-      interactiveElements: interactiveDetails
+      // Merging both arrays so that OpenAI gets a richer context
+      interactiveElements: [...interactiveDetails, ...liveInteractiveElements]
     };
   };
 

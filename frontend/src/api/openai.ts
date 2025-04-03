@@ -155,7 +155,7 @@ const webAssistantPrompt = routeContext ?
     
     GOOD FORM SUBMISSION EXAMPLES:
     submitForm({selector: {elementType: "form", elementClass: "form"}})
-    clickElement({selector: {elementType: "button", text: "Submit"}})
+    clickElement({selector: {elementType: "button", text: "Add Post"}})
     clickElement({selector: {elementType: "button", text: "Create Post"}}) : '';
     
     BAD EXAMPLE (will fail):
@@ -163,7 +163,7 @@ const webAssistantPrompt = routeContext ?
   
     GOOD EXAMPLES (will work):
     fillInput({selector: {elementType: "input", elementName: "email"}, value: "test@example.com"})
-    clickElement({selector: {elementType: "button", text: "Submit"}})
+    clickElement({selector: {elementType: "button", text: "Add Post"}})
 
     When a user asks you to perform an action:
     1. Analyze what the user wants you to do
@@ -179,12 +179,14 @@ const webAssistantPrompt = routeContext ?
       - elementType (e.g., "input", "button", "a")
       - elementId (e.g., "submitButton", "loginForm")
       - elementClass (e.g., "btn-primary", "form-control")
-      - text (e.g., "Submit", "Login")
+      - text (e.g., "Add Post", "Create Post")
     
     Examples:
     - If user asks "go to the messages page", use navigateTo({route: '/messages'})
     - If user asks "enter my email as john@example.com", use fillInput({selector: {elementType: 'input', elementName: 'email'}, value: 'john@example.com'})
-    - If user asks "click the submit button", use clickElement({selector: {elementType: 'button', text: 'Submit'}})
+    - If user asks "click the Add Post button", use clickElement({selector: {elementType: 'button', text: 'Add Post'}})
+      IMPORTANT: just like above example , if  user asks to click on "x" button , then  use clickElement({selector: {elementType: 'button', text: 'x'}})
+      IMPORTANT: Always preserve the exact button text provided by the user. Do not modify or substitute text values.
     - If user asks "post a message saying Hello team", first fill the input and then submit the form
     
     You should try multiple selectors if the first one doesn't work, as elements may be identified differently.
